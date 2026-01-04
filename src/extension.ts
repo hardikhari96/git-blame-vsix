@@ -602,23 +602,18 @@ async function showCommitDiff(item: HistoryItem) {
 
 		// Get the file content at the selected commit
 		const gitRelativePath = toGitPath(item.filePath);
-		const commitContent = await execPromise(`git show ${item.hash}:"${gitRelativePath}"`, { 
+		const { stdout: commitContent } = await execPromise(`git show ${item.hash}:"${gitRelativePath}"`, { 
 			cwd: item.workspaceFolder 
 		});
 
 		// Create URI for the historical version
 		const fileName = path.basename(item.filePath);
-		
-		const historicalUri = vscode.Uri.parse(`git-blame-commit:${fileName}?${item.hash}`).with({
-			scheme: 'git-blame-commit',
-			path: item.filePath,
-			query: item.hash
-		});
+		const historicalUri = vscode.Uri.parse(`git-blame-commit://${item.hash}/${item.filePath}`);
 
 		// Register text document content provider for historical version
 		const commitProvider = new (class implements vscode.TextDocumentContentProvider {
-			provideTextDocumentContent(): string {
-				return commitContent.stdout;
+			provideTextDocumentContent(uri: vscode.Uri): string {
+				return commitContent;
 			}
 		})();
 
@@ -632,13 +627,13 @@ async function showCommitDiff(item: HistoryItem) {
 			'vscode.diff',
 			historicalUri,
 			currentUri,
-			`${fileName} (${item.hash.substring(0, 8)}) <-> ${fileName} (Current)`
+			`${fileName} (${item.hash.substring(0, 8)}) ↔ ${fileName} (Current)`
 		);
 
-		// Clean up provider after a delay
+		// Clean up provider after a longer delay to ensure diff is loaded
 		setTimeout(() => {
 			disposable.dispose();
-		}, 1000);
+		}, 5000);
 
 	} catch (error) {
 		vscode.window.showErrorMessage(`Error showing diff: ${error}`);
