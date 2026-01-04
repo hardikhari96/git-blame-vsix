@@ -1,7 +1,7 @@
 {
-  "name": "git-blame",
-  "displayName": "Git Blame",
-  "description": "Git blame functionality with hover provider, file history, and ability to apply previous changes",
+  "name": "git-blame-enhanced",
+  "displayName": "Git Blame Enhanced",
+  "description": "Enhanced git blame with praise mode, emojis, leaderboard, bug detective, and visual statistics",
   "version": "0.0.1",
   "publisher": "haripatel",
   "repository": {
