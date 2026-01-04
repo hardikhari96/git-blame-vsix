@@ -93,6 +93,50 @@ Beautiful visual statistics about your file!
 - Changes to "Code Champions" in praise mode
 - **Command**: `Git Blame: Show Statistics`
 
+### 🎲 Blame Roulette
+Feeling lucky? Let fate choose a random line!
+
+- Picks a **random line** in your file
+- Shows who wrote it and when
+- **Jumps to that line** automatically
+- Great for code exploration and discovery
+- **Command**: `Git Blame: Blame Roulette 🎲`
+
+### 🏅 Author Achievements
+Gamify your coding with achievement badges!
+
+- **Unlock achievements** based on contributions:
+  - 🏆 Century Club (100+ lines)
+  - 🔥 Code Master (500+ lines)
+  - ⭐ Legend (1000+ lines)
+  - 🐛 Bug Squasher (5+ bug fixes)
+  - 🛡️ Bug Terminator (20+ bug fixes)
+  - 🎂 Veteran (1+ year in codebase)
+  - 🏅 Elder (2+ years)
+  - 📝 Prolific (10+ commits)
+  - 🚀 Superstar (50+ commits)
+- Beautiful webview showing all unlocked achievements
+- **Command**: `Git Blame: Show Achievements 🏆`
+
+### 🎉 Party Mode
+Add extra celebration to your blame experience!
+
+- Adds **🎉 confetti emoji** to all annotations
+- Makes coding more fun and celebratory
+- Perfect for when you're in a good mood!
+- **Toggle** with `Git Blame: Toggle Party Mode 🎉`
+
+### 💡 Fun Facts
+Learn something new while you code!
+
+- Shows **random programming fun facts** in tooltips (30% chance)
+- Facts about coding history, famous programmers, and tech trivia
+- Examples:
+  - "The first computer bug was an actual moth!"
+  - "Python is named after Monty Python!"
+  - "Git was created in just 2 weeks!"
+- **Command**: `Git Blame: Show Fun Fact 💡` to see one anytime
+
 ## 🚀 Usage
 
 ### Hover Blame
@@ -131,14 +175,21 @@ Simply hover your mouse over any line of code in a Git repository to see the bla
 
 Access via right-click menu or Command Palette (Ctrl/Cmd+Shift+P):
 
+**Core Features:**
 - `Git Blame: Show File History` - View commit history with diff
 - `Git Blame: Apply Previous Changes` - Restore previous version
 - `Git Blame: Toggle Inline Annotations` - Show/hide inline blame
+
+**Fun & Advanced Features:**
 - `Git Blame: Toggle Praise/Blame Mode` - Switch to positive terminology
 - `Git Blame: Show Leaderboard` - See top contributors
 - `Git Blame: Toggle Emojis` - Enable/disable age emojis
 - `Git Blame: Toggle Bug Detective Mode` - Highlight bug fixes
 - `Git Blame: Show Statistics` - View visual dashboard
+- `Git Blame: Blame Roulette 🎲` - Pick a random line
+- `Git Blame: Show Achievements 🏆` - View unlocked achievements
+- `Git Blame: Toggle Party Mode 🎉` - Add celebration flair
+- `Git Blame: Show Fun Fact 💡` - Learn coding trivia
 
 ## 💡 Requirements
 

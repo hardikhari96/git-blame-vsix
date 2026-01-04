@@ -79,6 +79,26 @@
         "command": "git-blame.showStatistics",
         "title": "Git Blame: Show Statistics",
         "icon": "$(graph)"
+      },
+      {
+        "command": "git-blame.blameRoulette",
+        "title": "Git Blame: Blame Roulette 🎲",
+        "icon": "$(symbol-event)"
+      },
+      {
+        "command": "git-blame.showAchievements",
+        "title": "Git Blame: Show Achievements 🏆",
+        "icon": "$(star-full)"
+      },
+      {
+        "command": "git-blame.togglePartyMode",
+        "title": "Git Blame: Toggle Party Mode 🎉",
+        "icon": "$(flame)"
+      },
+      {
+        "command": "git-blame.showFunFact",
+        "title": "Git Blame: Show Fun Fact 💡",
+        "icon": "$(lightbulb)"
       }
     ],
     "menus": {
@@ -130,6 +150,16 @@
         {
           "command": "git-blame.showStatistics",
           "group": "git-blame@7",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "git-blame.blameRoulette",
+          "group": "git-blame-fun@1",
+          "when": "editorTextFocus"
+        },
+        {
+          "command": "git-blame.showAchievements",
+          "group": "git-blame-fun@2",
           "when": "editorTextFocus"
         }
       ],

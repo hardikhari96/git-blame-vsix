@@ -44,6 +44,8 @@ let blameUpdateTimeout: NodeJS.Timeout | undefined;
 let praiseMode = false; // Toggle between 'blame' and 'praise' mode
 let showEmojis = true; // Show emojis in annotations
 let bugDetectiveMode = false; // Highlight bug fix lines
+let showFunFacts = true; // Show random fun facts
+let partyMode = false; // Celebration mode with extra flair
 
 export async function activate(context: vscode.ExtensionContext) {
 	console.log('Git Blame extension is now active!');
@@ -210,6 +212,55 @@ export async function activate(context: vscode.ExtensionContext) {
 		}
 	);
 
+	// Register command for blame roulette (random line)
+	const blameRouletteCommand = vscode.commands.registerCommand(
+		'git-blame.blameRoulette',
+		async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				vscode.window.showErrorMessage('No active editor');
+				return;
+			}
+			await showBlameRoulette(editor);
+		}
+	);
+
+	// Register command to show author achievements
+	const showAchievementsCommand = vscode.commands.registerCommand(
+		'git-blame.showAchievements',
+		async () => {
+			const editor = vscode.window.activeTextEditor;
+			if (!editor) {
+				vscode.window.showErrorMessage('No active editor');
+				return;
+			}
+			await showAuthorAchievements(editor);
+		}
+	);
+
+	// Register command to toggle party mode
+	const togglePartyModeCommand = vscode.commands.registerCommand(
+		'git-blame.togglePartyMode',
+		async () => {
+			partyMode = !partyMode;
+			const editor = vscode.window.activeTextEditor;
+			if (editor && blameAnnotationsEnabled) {
+				await updateBlameAnnotations(editor, editor.selection.active);
+			}
+			const status = partyMode ? '🎉🎊 PARTY MODE ON! 🎊🎉' : 'Party mode off';
+			vscode.window.showInformationMessage(status);
+		}
+	);
+
+	// Register command to show fun fact
+	const showFunFactCommand = vscode.commands.registerCommand(
+		'git-blame.showFunFact',
+		async () => {
+			const fact = getRandomFunFact();
+			vscode.window.showInformationMessage(`💡 Fun Fact: ${fact}`);
+		}
+	);
+
 	// Update blame annotations when cursor moves
 	context.subscriptions.push(
 		vscode.window.onDidChangeTextEditorSelection(async (e) => {
@@ -279,6 +330,10 @@ export async function activate(context: vscode.ExtensionContext) {
 		toggleEmojiCommand,
 		toggleBugDetectiveCommand,
 		showStatsCommand,
+		blameRouletteCommand,
+		showAchievementsCommand,
+		togglePartyModeCommand,
+		showFunFactCommand,
 		treeView,
 		blameDecorationType
 	);
@@ -335,6 +390,11 @@ class GitBlameHoverProvider implements vscode.HoverProvider {
 			
 			markdownString.appendMarkdown(`Summary: ${blameInfo.summary}\n\n`);
 			markdownString.appendMarkdown(`Commit: \`${blameInfo.hash.substring(0, 8)}\``);
+			
+			if (showFunFacts && Math.random() < 0.3) {
+				const funFact = getRandomFunFact();
+				markdownString.appendMarkdown(`\n\n💡 *${funFact}*`);
+			}
 
 			return new vscode.Hover(markdownString);
 		} catch (error) {
@@ -711,7 +771,8 @@ async function updateBlameAnnotations(editor: vscode.TextEditor, position?: vsco
 		const ageEmoji = showEmojis ? getAgeEmoji(date) + ' ' : '';
 		const bugIcon = (bugDetectiveMode && isBugFix) ? '🐛 ' : '';
 		const prefix = praiseMode ? '👏 ' : '';
-		const annotation = ` ${prefix}${bugIcon}${ageEmoji}${displayAuthor} (${timeAgo}) - ${truncateSummary(summaryText)}`;
+		const partyEmoji = partyMode ? '🎉 ' : '';
+		const annotation = ` ${partyEmoji}${prefix}${bugIcon}${ageEmoji}${displayAuthor} (${timeAgo}) - ${truncateSummary(summaryText)}`;
 
 		const documentLine = editor.document.lineAt(targetPosition.line);
 		const lineEnd = documentLine.range.end.character;
@@ -1160,6 +1221,231 @@ function getStatsWebviewContent(
 	</table>
 </body>
 </html>`;
+}
+
+function getRandomFunFact(): string {
+	const funFacts = [
+		"The first computer bug was an actual bug - a moth found in a computer in 1947!",
+		"The first programmer was Ada Lovelace in the 1800s.",
+		"'Hello World' tradition started with the C programming language in 1978.",
+		"The average programmer makes 3-5 mistakes per 100 lines of code.",
+		"Programmers spend ~70% of their time reading code, not writing it!",
+		"The first computer virus was created in 1983 and was called 'Elk Cloner'.",
+		"NASA's entire Apollo 11 source code is publicly available on GitHub!",
+		"The first webcam was created at Cambridge to monitor a coffee pot.",
+		"More than 700 programming languages exist today!",
+		"The first domain ever registered was Symbolics.com on March 15, 1985.",
+		"Python is named after Monty Python, not the snake!",
+		"The first ever VCR was used to record coding mistakes at IBM.",
+		"90% of the world's currency only exists in computers, not as physical money.",
+		"Java was originally called Oak, then renamed to avoid trademark issues.",
+		"The @ symbol in email was chosen by Ray Tomlinson in 1971.",
+		"Git was created by Linus Torvalds in just 2 weeks!",
+		"The term 'debugging' was popularized by Grace Hopper.",
+		"C++ was originally called 'C with Classes'.",
+		"The first computer mouse was made of wood!",
+		"Most software engineers have imposter syndrome - you're not alone!",
+		"Code comments are love letters to your future self.",
+		"The best code is no code - every line is a potential bug!",
+		"Rubber duck debugging really works - try it!",
+		"Stack Overflow was launched in 2008 and has saved millions of developers."
+	];
+	return funFacts[Math.floor(Math.random() * funFacts.length)];
+}
+
+async function showBlameRoulette(editor: vscode.TextEditor) {
+	try {
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+		if (!workspaceFolder) {
+			vscode.window.showErrorMessage('File is not in a workspace');
+			return;
+		}
+
+		// Pick a random line
+		const randomLine = Math.floor(Math.random() * editor.document.lineCount);
+		const relativePath = vscode.workspace.asRelativePath(editor.document.uri);
+		const blameInfo = await getBlameForLine(workspaceFolder.uri.fsPath, relativePath, randomLine + 1);
+
+		if (!blameInfo) {
+			vscode.window.showErrorMessage('Could not get blame information');
+			return;
+		}
+
+		const date = new Date(parseInt(blameInfo.authorTime) * 1000);
+		const timeAgo = getTimeAgo(date);
+		const ageEmoji = getAgeEmoji(date);
+
+		// Move cursor to that line
+		const position = new vscode.Position(randomLine, 0);
+		editor.selection = new vscode.Selection(position, position);
+		editor.revealRange(new vscode.Range(position, position), vscode.TextEditorRevealType.InCenter);
+
+		vscode.window.showInformationMessage(
+			`\ud83c\udfb2 Blame Roulette! Line ${randomLine + 1}: ${ageEmoji} ${blameInfo.author} wrote this ${timeAgo} - "${blameInfo.summary}"`
+		);
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error in blame roulette: ${error}`);
+	}
+}
+
+async function showAuthorAchievements(editor: vscode.TextEditor) {
+	try {
+		const workspaceFolder = vscode.workspace.getWorkspaceFolder(editor.document.uri);
+		if (!workspaceFolder) {
+			vscode.window.showErrorMessage('File is not in a workspace');
+			return;
+		}
+
+		const relativePath = vscode.workspace.asRelativePath(editor.document.uri);
+		const command = `git blame --line-porcelain "${relativePath}"`;
+		const { stdout } = await execPromise(command, { cwd: workspaceFolder.uri.fsPath });
+
+		const authorStats = new Map<string, {
+			lines: number;
+			firstCommit: Date;
+			lastCommit: Date;
+			bugFixes: number;
+			commits: Set<string>;
+		}>();
+
+		const lines = stdout.split('\\n');
+		let currentAuthor = '';
+		let currentTime = '';
+		let currentSummary = '';
+		let currentHash = '';
+
+		for (const line of lines) {
+			if (line.startsWith('author ') && !line.startsWith('author-')) {
+				currentAuthor = line.substring(7);
+			} else if (line.startsWith('author-time ')) {
+				currentTime = line.substring(12);
+			} else if (line.startsWith('summary ')) {
+				currentSummary = line.substring(8);
+			} else if (!line.startsWith('author') && !line.startsWith('committer') && !line.startsWith('summary') && currentAuthor) {
+				const hashMatch = line.match(/^([a-f0-9]{40})/);
+				if (hashMatch) {
+					currentHash = hashMatch[1];
+				}
+			}
+
+			if (currentAuthor && currentTime) {
+				const stats = authorStats.get(currentAuthor) || {
+					lines: 0,
+					firstCommit: new Date(parseInt(currentTime) * 1000),
+					lastCommit: new Date(parseInt(currentTime) * 1000),
+					bugFixes: 0,
+					commits: new Set<string>()
+				};
+
+				stats.lines++;
+				const commitDate = new Date(parseInt(currentTime) * 1000);
+				if (commitDate < stats.firstCommit) {
+					stats.firstCommit = commitDate;
+				}
+				if (commitDate > stats.lastCommit) {
+					stats.lastCommit = commitDate;
+				}
+				if (currentSummary && isBugFixCommit(currentSummary)) {
+					stats.bugFixes++;
+				}
+				if (currentHash) {
+					stats.commits.add(currentHash);
+				}
+
+				authorStats.set(currentAuthor, stats);
+			}
+		}
+
+		// Generate achievements
+		const achievements: string[] = [];
+		
+		for (const [author, stats] of authorStats.entries()) {
+			const authorAchievements: string[] = [];
+			const displayName = author === currentGitUser ? 'You' : author;
+
+			// Line-based achievements
+			if (stats.lines >= 100) {
+				authorAchievements.push('\ud83c\udfc6 Century Club (100+ lines)');
+			}
+			if (stats.lines >= 500) {
+				authorAchievements.push('\ud83d\udd25 Code Master (500+ lines)');
+			}
+			if (stats.lines >= 1000) {
+				authorAchievements.push('\u2b50 Legend (1000+ lines)');
+			}
+
+			// Bug fix achievements
+			if (stats.bugFixes >= 5) {
+				authorAchievements.push('\ud83d\udc1b Bug Squasher (5+ bug fixes)');
+			}
+			if (stats.bugFixes >= 20) {
+				authorAchievements.push('\ud83d\udee1\ufe0f Bug Terminator (20+ bug fixes)');
+			}
+
+			// Longevity achievements
+			const daysSinceFirst = Math.floor((Date.now() - stats.firstCommit.getTime()) / (1000 * 60 * 60 * 24));
+			if (daysSinceFirst > 365) {
+				authorAchievements.push('\ud83c\udf82 Veteran (1+ year)');
+			}
+			if (daysSinceFirst > 730) {
+				authorAchievements.push('\ud83c\udfc5 Elder (2+ years)');
+			}
+
+			// Commit count achievements
+			if (stats.commits.size >= 10) {
+				authorAchievements.push('\ud83d\udcdd Prolific (10+ commits)');
+			}
+			if (stats.commits.size >= 50) {
+				authorAchievements.push('\ud83d\ude80 Superstar (50+ commits)');
+			}
+
+			if (authorAchievements.length > 0) {
+				achievements.push(`**${displayName}**\\n${authorAchievements.join('\\n')}`);
+			}
+		}
+
+		if (achievements.length === 0) {
+			vscode.window.showInformationMessage('\ud83c\udfae No achievements unlocked yet! Keep coding!');
+		} else {
+			const panel = vscode.window.createWebviewPanel(
+				'achievements',
+				'\ud83c\udfae Author Achievements',
+				vscode.ViewColumn.Beside,
+				{}
+			);
+
+			panel.webview.html = `<!DOCTYPE html>
+<html>
+<head>
+	<style>
+		body {
+			padding: 20px;
+			font-family: var(--vscode-font-family);
+			color: var(--vscode-foreground);
+		}
+		h1 { text-align: center; }
+		.achievement-section {
+			margin: 20px 0;
+			padding: 15px;
+			background: var(--vscode-editor-background);
+			border-left: 4px solid var(--vscode-textLink-foreground);
+			border-radius: 4px;
+		}
+		.achievement {
+			padding: 8px 0;
+			font-size: 16px;
+		}
+	</style>
+</head>
+<body>
+	<h1>\ud83c\udfc6 Code Achievements \ud83c\udfc6</h1>
+	${achievements.map(a => `<div class="achievement-section">${a.replace(/\\n/g, '<br>')}</div>`).join('')}
+</body>
+</html>`;
+		}
+	} catch (error) {
+		vscode.window.showErrorMessage(`Error getting achievements: ${error}`);
+	}
 }
 
 export function deactivate() {}
