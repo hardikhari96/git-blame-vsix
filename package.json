@@ -2,7 +2,7 @@
   "name": "git-blame-enhanced",
   "displayName": "Git Blame Enhanced",
   "description": "Enhanced git blame with praise mode, emojis, leaderboard, bug detective, and visual statistics",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "haripatel",
   "repository": {
     "type": "git",
