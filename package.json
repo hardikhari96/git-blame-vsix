@@ -3,7 +3,7 @@
   "displayName": "Git Blame",
   "description": "Git blame functionality with hover provider, file history, and ability to apply previous changes",
   "version": "0.0.1",
-  "publisher": "your-publisher-name",
+  "publisher": "haripatel",
   "repository": {
     "type": "git",
     "url": "https://github.com/hardikhari96/git-blame-vsix"
